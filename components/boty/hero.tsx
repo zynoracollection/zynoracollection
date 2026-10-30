@@ -1,9 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 
 export function Hero() {
+  const [videoReady, setVideoReady] = useState(false)
+
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden bg-[#e3e1e2]">
       {/* Background Video */}
@@ -12,13 +15,35 @@ export function Hero() {
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         poster="/images/hero-poster.png"
+        onCanPlay={() => setVideoReady(true)}
+        onError={() => setVideoReady(true)}
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
       >
         <source src="/hero.mp4" type="video/mp4" />
       </video>
+
+      {/* Poster and loader while the video buffers */}
+      <div
+        className={`absolute inset-0 z-[1] bg-cover bg-center transition-opacity duration-700 ${videoReady ? "pointer-events-none opacity-0" : "opacity-100"}`}
+        style={{ backgroundImage: "url('/images/hero-poster.png')" }}
+        aria-hidden="true"
+      >
+      </div>
+
+      {/* Full-screen opening loader until the hero video is ready */}
+      <div
+        className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-700 ${videoReady ? "pointer-events-none opacity-0" : "opacity-100"}`}
+        aria-label="Loading ZynoraCollection"
+        aria-hidden={videoReady}
+      >
+        <div className="flex flex-col items-center gap-5">
+          <span className="font-serif text-3xl tracking-wider text-foreground">ZynoraCollection</span>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground/20 border-t-primary" />
+        </div>
+      </div>
 
       {/* Readability overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-white/75 via-white/30 to-transparent" />
