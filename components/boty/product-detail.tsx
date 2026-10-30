@@ -23,10 +23,11 @@ import {
   getRelatedProducts,
   type Product,
 } from "@/lib/products"
+import { getProductOverride } from "@/lib/product-overrides"
 
 const benefits = [
   { icon: Sparkles, label: "Boutique finish" },
-  { icon: Scissors, label: "Stitched & ready" },
+  { icon: Scissors, label: "Unstitched 3-piece" },
   { icon: Truck, label: "Fast delivery" },
   { icon: ShieldCheck, label: "Easy exchange" },
 ]
@@ -34,8 +35,8 @@ const benefits = [
 type AccordionSection = "details" | "fabric" | "care" | "delivery"
 
 export function ProductDetail({ product }: { product: Product }) {
-  const { addItem, setIsOpen } = useCart()
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0])
+  const { addItem } = useCart()
+  const [displayProduct, setDisplayProduct] = useState(product)
   const [quantity, setQuantity] = useState(1)
   const [openAccordion, setOpenAccordion] =
     useState<AccordionSection | null>("details")
@@ -44,7 +45,9 @@ export function ProductDetail({ product }: { product: Product }) {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [product.id])
+    const override = getProductOverride(product.id)
+    if (override) queueMicrotask(() => setDisplayProduct({ ...product, ...override }))
+  }, [product])
 
   const toggleAccordion = (section: AccordionSection) => {
     setOpenAccordion((current) => (current === section ? null : section))
@@ -54,11 +57,10 @@ export function ProductDetail({ product }: { product: Product }) {
     addItem(
       {
         productId: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        image: product.image,
-        size: selectedSize,
+        name: displayProduct.name,
+        description: displayProduct.description,
+        price: displayProduct.price,
+        image: displayProduct.image,
       },
       quantity,
     )
@@ -71,10 +73,10 @@ export function ProductDetail({ product }: { product: Product }) {
     title: string
     content: string
   }[] = [
-    { key: "details", title: "Details", content: product.details },
-    { key: "fabric", title: "Fabric", content: product.fabric },
-    { key: "care", title: "Care Guide", content: product.care },
-    { key: "delivery", title: "Delivery & Exchange", content: product.delivery },
+    { key: "details", title: "Details", content: displayProduct.details },
+    { key: "fabric", title: "Fabric", content: displayProduct.fabric },
+    { key: "care", title: "Care Guide", content: displayProduct.care },
+    { key: "delivery", title: "Delivery & Exchange", content: displayProduct.delivery },
   ]
 
   return (
@@ -96,14 +98,26 @@ export function ProductDetail({ product }: { product: Product }) {
             {/* Product Image */}
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-card boty-shadow">
               <Image
-                src={product.image}
-                alt={product.name}
+                src={displayProduct.image}
+                alt={displayProduct.name}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-top"
               />
             </div>
+            {displayProduct.video && (
+              <video
+                className="mt-4 w-full rounded-3xl bg-card boty-shadow"
+                controls
+                preload="metadata"
+                poster={displayProduct.image}
+                playsInline
+              >
+                <source src={displayProduct.video} />
+                Your browser does not support product video playback.
+              </video>
+            )}
 
             {/* Product Info */}
             <div className="flex flex-col">
@@ -113,10 +127,10 @@ export function ProductDetail({ product }: { product: Product }) {
                   ZynoraCollection
                 </span>
                 <h1 className="mb-3 font-serif text-4xl text-foreground md:text-5xl">
-                  {product.name}
+                  {displayProduct.name}
                 </h1>
                 <p className="mb-4 text-lg italic text-muted-foreground">
-                  {product.tagline}
+                  {displayProduct.tagline}
                 </p>
 
                 {/* Rating */}
@@ -135,45 +149,21 @@ export function ProductDetail({ product }: { product: Product }) {
                 </div>
 
                 <p className="leading-relaxed text-foreground/80">
-                  {product.description}
+                  {displayProduct.description}
                 </p>
               </div>
 
               {/* Price */}
               <div className="mb-8 flex items-center gap-3">
                 <span className="text-3xl font-medium text-foreground">
-                  {formatPrice(product.price)}
+                  {formatPrice(displayProduct.price)}
                 </span>
-                {product.originalPrice && (
+                {displayProduct.originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    {formatPrice(product.originalPrice)}
+                    {formatPrice(displayProduct.originalPrice)}
                   </span>
                 )}
               </div>
-
-              {/* Size Selector */}
-              <fieldset className="mb-6">
-                <legend className="mb-3 block text-sm font-medium text-foreground">
-                  Size
-                </legend>
-                <div className="flex flex-wrap gap-3">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => setSelectedSize(size)}
-                      aria-pressed={selectedSize === size}
-                      className={`rounded-full px-6 py-3 text-sm boty-transition boty-shadow ${
-                        selectedSize === size
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card text-foreground hover:bg-card/80"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
 
               {/* Quantity Selector */}
               <div className="mb-8">
@@ -222,16 +212,6 @@ export function ProductDetail({ product }: { product: Product }) {
                   ) : (
                     "Add to Cart"
                   )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    addToCart()
-                    setIsOpen(true)
-                  }}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-foreground/20 bg-transparent px-8 py-4 text-sm tracking-wide text-foreground boty-transition hover:bg-foreground/5"
-                >
-                  Buy Now
                 </button>
               </div>
 

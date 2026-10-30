@@ -79,7 +79,6 @@ export function CartDrawer() {
                       {item.name}
                     </h3>
                     <p className="mb-1 text-sm text-muted-foreground">
-                      {item.size ? `Size ${item.size} · ` : ""}
                       {formatPrice(item.price)}
                     </p>
 

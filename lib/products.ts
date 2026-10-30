@@ -8,6 +8,8 @@ export interface Product {
   price: number
   originalPrice: number | null
   image: string
+  video?: string | null
+  stockQuantity?: number
   badge: string | null
   collections: CollectionId[]
   sizes: string[]
@@ -52,9 +54,9 @@ export const products: Product[] = [
     collections: ["festive", "signature"],
     sizes: ["S", "M", "L", "XL"],
     details:
-      "Aurelia is our most requested wedding-season silhouette. The deep crimson shirt is covered in gold paisley embroidery, balanced by a lightweight organza dupatta and tailored trousers. Understated from across the room, detailed up close.",
+      "Aurelia is a three-piece unstitched suit for your own tailor to shape. The deep crimson fabric is covered in gold paisley embroidery and paired with a lightweight organza dupatta.",
     fabric:
-      "Shirt: embroidered raw silk. Dupatta: embroidered organza. Trouser: raw silk. The suit is stitched and ready to wear.",
+      "Shirt: embroidered raw silk. Dupatta: embroidered organza. Trouser: raw silk. The three-piece suit is unstitched.",
     care:
       "Dry clean only. Do not wring or tumble dry. Iron on low heat with a cloth between the iron and the embroidery.",
     delivery:

@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
-import { products, formatPrice } from "@/lib/products"
+import { formatPrice, type Product } from "@/lib/products"
 import { useCart } from "./cart-context"
 
-export function ProductGrid() {
+export function ProductGrid({ products }: { products: Product[] }) {
   const [isVisible, setIsVisible] = useState(false)
   const [headerVisible, setHeaderVisible] = useState(false)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -129,7 +129,6 @@ export function ProductGrid() {
                         description: product.description,
                         price: product.price,
                         image: product.image,
-                        size: product.sizes[0],
                       })
                     }}
                     aria-label={`Add ${product.name} to cart`}

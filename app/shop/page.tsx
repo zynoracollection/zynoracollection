@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { collections, type CollectionId } from "@/lib/products"
+import { getStoreProducts } from "@/lib/store-products"
 import { ShopContent } from "./shop-content"
 
 export const metadata: Metadata = {
@@ -25,5 +26,5 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     ? (requested as FilterId)
     : "all"
 
-  return <ShopContent initialCategory={initialCategory} />
+  return <ShopContent initialCategory={initialCategory} products={await getStoreProducts()} />
 }

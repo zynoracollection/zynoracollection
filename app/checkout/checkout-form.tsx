@@ -84,7 +84,7 @@ export function CheckoutForm() {
                   >
                     <span>
                       {item.name}
-                      {item.size ? ` (${item.size})` : ""} × {item.quantity}
+                      × {item.quantity}
                     </span>
                     <span>{formatPrice(item.price * item.quantity)}</span>
                   </div>
@@ -314,7 +314,7 @@ function CheckoutLine({ item }: { item: CartItem }) {
           {item.name}
         </p>
         <p className="text-xs text-muted-foreground">
-          {item.size ? `Size ${item.size} · ` : ""}Qty {item.quantity}
+          Qty {item.quantity}
         </p>
       </div>
       <span className="whitespace-nowrap text-sm text-foreground">

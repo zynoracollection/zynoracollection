@@ -10,7 +10,6 @@ import { useCart } from "@/components/boty/cart-context"
 import {
   collections,
   formatPrice,
-  products,
   type CollectionId,
   type Product,
 } from "@/lib/products"
@@ -19,8 +18,10 @@ type FilterId = "all" | CollectionId
 
 export function ShopContent({
   initialCategory,
+  products,
 }: {
   initialCategory: FilterId
+  products: Product[]
 }) {
   const [selectedCategory, setSelectedCategory] =
     useState<FilterId>(initialCategory)
@@ -238,7 +239,6 @@ function ShopProductCard({ product }: { product: Product }) {
                 description: product.description,
                 price: product.price,
                 image: product.image,
-                size: product.sizes[0],
               })
             }}
             aria-label={`Add ${product.name} to cart`}

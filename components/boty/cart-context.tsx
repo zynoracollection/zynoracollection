@@ -14,7 +14,6 @@ export interface CartItemInput {
   description: string
   price: number
   image: string
-  size?: string
 }
 
 export interface CartItem extends CartItemInput {
@@ -39,8 +38,8 @@ const STORAGE_KEY = "zynora-cart"
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-function cartLineId(productId: string, size?: string) {
-  return size ? `${productId}::${size}` : productId
+function cartLineId(productId: string) {
+  return productId
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -95,7 +94,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isHydrated])
 
   const addItem = (newItem: CartItemInput, quantity = 1) => {
-    const id = cartLineId(newItem.productId, newItem.size)
+    const id = cartLineId(newItem.productId)
     const safeQuantity = Math.max(1, Math.floor(quantity))
 
     setItems((currentItems) => {
