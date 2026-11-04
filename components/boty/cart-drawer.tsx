@@ -17,6 +17,7 @@ import {
   formatPrice,
   getShipping,
 } from "@/lib/products"
+import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { useCart } from "./cart-context"
 
 export function CartDrawer() {
@@ -32,6 +33,36 @@ export function CartDrawer() {
 
   const shipping = getShipping(subtotal)
   const total = subtotal + shipping
+
+  const checkoutOnWhatsApp = () => {
+    if (items.length === 0) return
+
+    const origin = window.location.origin
+    const lines = ["*New Order — ZynoraCollection*", "", "*Items*"]
+
+    items.forEach((item, index) => {
+      lines.push(
+        `${index + 1}. ${item.name}`,
+        `   Qty: ${item.quantity} × ${formatPrice(item.price)} = ${formatPrice(item.price * item.quantity)}`,
+        `   ${origin}/product/${item.productId}`,
+      )
+    })
+
+    lines.push(
+      "",
+      `Subtotal: ${formatPrice(subtotal)}`,
+      `Shipping: ${shipping === 0 ? "Free" : formatPrice(shipping)}`,
+      `*Total: ${formatPrice(total)}*`,
+      "",
+      "Please share your name, phone number and delivery address in this chat to confirm the order.",
+    )
+
+    const whatsappUrl = getWhatsAppUrl(lines.join("\n"))
+    setIsOpen(false)
+
+    const opened = window.open(whatsappUrl, "_blank", "noopener,noreferrer")
+    if (!opened) window.location.assign(whatsappUrl)
+  }
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right">
@@ -158,14 +189,13 @@ export function CartDrawer() {
             </div>
 
             {/* Checkout Button */}
-            <DrawerClose asChild>
-              <Link
-                href="/checkout"
-                className="w-full rounded-full bg-primary py-4 text-center font-medium text-primary-foreground boty-transition hover:bg-primary/90"
-              >
-                Checkout
-              </Link>
-            </DrawerClose>
+            <button
+              type="button"
+              onClick={checkoutOnWhatsApp}
+              className="w-full rounded-full bg-primary py-4 text-center font-medium text-primary-foreground boty-transition hover:bg-primary/90"
+            >
+              Checkout
+            </button>
 
             <DrawerClose asChild>
               <button

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Check, ExternalLink, ImageIcon, LogOut, Plus, Save, Trash2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -33,6 +32,14 @@ export function AdminDashboard({ products: initialProducts }: { products: Produc
     setSaved(false)
     setForm((current) => ({ ...current, [field]: value }))
   }
+
+  const revalidateStorefront = async () => {
+    try {
+      await fetch("/api/revalidate", { method: "POST" })
+    } catch {
+      // The storefront cache expires on its own if this request fails.
+    }
+  }
   const selectProduct = (product: Product) => { setSelectedId(product.id); setForm(productForm(product)); setSaved(false); setStatus("") }
   const addProduct = () => { setSelectedId(null); setForm(blankForm()); setSaved(false); setStatus("New product") }
 
@@ -62,6 +69,7 @@ export function AdminDashboard({ products: initialProducts }: { products: Produc
     const { data, error } = await createClient().from("products").upsert(product).select("*").single()
     if (error) { setStatus(error.message); return }
     const savedProduct: Product = { ...product, image: product.image_url, video: product.video_url, originalPrice: product.original_price, stockQuantity: product.stock_quantity, collections: product.collections as Product["collections"], badge: product.badge }
+    await revalidateStorefront()
     setProducts((current) => { const exists = current.some((item) => item.id === savedProduct.id); return exists ? current.map((item) => item.id === savedProduct.id ? savedProduct : item) : [savedProduct, ...current] })
     setSelectedId(savedProduct.id); setForm(productForm(savedProduct)); setSaved(true); setStatus(data ? "Saved to Supabase" : "Saved")
   }
@@ -70,6 +78,7 @@ export function AdminDashboard({ products: initialProducts }: { products: Produc
     if (!selectedId || !window.confirm("Delete this product permanently?")) return
     const { error } = await createClient().from("products").delete().eq("id", selectedId)
     if (error) { setStatus(error.message); return }
+    await revalidateStorefront()
     const remaining = products.filter((product) => product.id !== selectedId)
     setProducts(remaining); setSelectedId(remaining[0]?.id ?? null); setForm(remaining[0] ? productForm(remaining[0]) : blankForm()); setStatus("Product deleted")
   }

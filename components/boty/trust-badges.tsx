@@ -1,6 +1,3 @@
-"use client"
-
-import { useEffect, useRef, useState } from "react"
 import { Leaf, Droplets, Sparkles, Flower2 } from "lucide-react"
 
 const badges = [

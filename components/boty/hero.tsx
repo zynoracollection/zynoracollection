@@ -1,43 +1,76 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 
 export function Hero() {
+  const [imageReady, setImageReady] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
+  const [loadVideo, setLoadVideo] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const showContent = () => {
+    setImageReady(true)
+    setLoadVideo(true)
+  }
+
+  useEffect(() => {
+    if (!loadVideo) return
+
+    const video = videoRef.current
+    if (!video) return
+
+    video.load()
+    void video.play().catch(() => {
+      // Autoplay can be blocked; the poster image remains visible.
+    })
+  }, [loadVideo])
+
+  // Do not leave visitors on the loader if the poster request stalls.
+  useEffect(() => {
+    const timeout = window.setTimeout(showContent, 6000)
+    return () => window.clearTimeout(timeout)
+  }, [])
 
   return (
     <section className="relative flex min-h-screen items-center overflow-hidden bg-[#e3e1e2]">
-      {/* Background Video */}
+      {/* Optimized poster is the first thing the browser paints */}
+      <Image
+        src="/images/hero-poster.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        quality={70}
+        onLoad={showContent}
+        onError={showContent}
+        aria-hidden="true"
+        className={`object-cover transition-opacity duration-700 ${videoReady ? "opacity-0" : "opacity-100"}`}
+      />
+
+      {/* Background Video loaded only after the poster is ready */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
-        poster="/images/hero-poster.png"
+        preload="none"
         onCanPlay={() => setVideoReady(true)}
-        onError={() => setVideoReady(true)}
+        onError={() => setVideoReady(false)}
         aria-hidden="true"
         className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
       >
-        <source src="/hero.mp4" type="video/mp4" />
+        {loadVideo && <source src="/hero.mp4" type="video/mp4" />}
       </video>
 
-      {/* Poster and loader while the video buffers */}
+      {/* Full-screen opening loader until the hero poster is ready */}
       <div
-        className={`absolute inset-0 z-[1] bg-cover bg-center transition-opacity duration-700 ${videoReady ? "pointer-events-none opacity-0" : "opacity-100"}`}
-        style={{ backgroundImage: "url('/images/hero-poster.png')" }}
-        aria-hidden="true"
-      >
-      </div>
-
-      {/* Full-screen opening loader until the hero video is ready */}
-      <div
-        className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-700 ${videoReady ? "pointer-events-none opacity-0" : "opacity-100"}`}
+        className={`fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-700 ${imageReady ? "pointer-events-none opacity-0" : "opacity-100"}`}
         aria-label="Loading ZynoraCollection"
-        aria-hidden={videoReady}
+        aria-hidden={imageReady}
       >
         <div className="flex flex-col items-center gap-5">
           <span className="font-serif text-3xl tracking-wider text-foreground">ZynoraCollection</span>

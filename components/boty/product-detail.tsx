@@ -18,12 +18,7 @@ import {
 import { Header } from "@/components/boty/header"
 import { Footer } from "@/components/boty/footer"
 import { useCart } from "@/components/boty/cart-context"
-import {
-  formatPrice,
-  getRelatedProducts,
-  type Product,
-} from "@/lib/products"
-import { getProductOverride } from "@/lib/product-overrides"
+import { formatPrice, type Product } from "@/lib/products"
 
 const benefits = [
   { icon: Sparkles, label: "Boutique finish" },
@@ -34,20 +29,22 @@ const benefits = [
 
 type AccordionSection = "details" | "fabric" | "care" | "delivery"
 
-export function ProductDetail({ product }: { product: Product }) {
+export function ProductDetail({
+  product,
+  relatedProducts,
+}: {
+  product: Product
+  relatedProducts: Product[]
+}) {
   const { addItem } = useCart()
-  const [displayProduct, setDisplayProduct] = useState(product)
   const [quantity, setQuantity] = useState(1)
   const [openAccordion, setOpenAccordion] =
     useState<AccordionSection | null>("details")
   const [isAdded, setIsAdded] = useState(false)
-  const relatedProducts = getRelatedProducts(product.id)
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    const override = getProductOverride(product.id)
-    if (override) queueMicrotask(() => setDisplayProduct({ ...product, ...override }))
-  }, [product])
+  }, [product.id])
 
   const toggleAccordion = (section: AccordionSection) => {
     setOpenAccordion((current) => (current === section ? null : section))
@@ -57,10 +54,10 @@ export function ProductDetail({ product }: { product: Product }) {
     addItem(
       {
         productId: product.id,
-        name: displayProduct.name,
-        description: displayProduct.description,
-        price: displayProduct.price,
-        image: displayProduct.image,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        image: product.image,
       },
       quantity,
     )
@@ -73,10 +70,10 @@ export function ProductDetail({ product }: { product: Product }) {
     title: string
     content: string
   }[] = [
-    { key: "details", title: "Details", content: displayProduct.details },
-    { key: "fabric", title: "Fabric", content: displayProduct.fabric },
-    { key: "care", title: "Care Guide", content: displayProduct.care },
-    { key: "delivery", title: "Delivery & Exchange", content: displayProduct.delivery },
+    { key: "details", title: "Details", content: product.details },
+    { key: "fabric", title: "Fabric", content: product.fabric },
+    { key: "care", title: "Care Guide", content: product.care },
+    { key: "delivery", title: "Delivery & Exchange", content: product.delivery },
   ]
 
   return (
@@ -98,23 +95,23 @@ export function ProductDetail({ product }: { product: Product }) {
             {/* Product Image */}
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-card boty-shadow">
               <Image
-                src={displayProduct.image}
-                alt={displayProduct.name}
+                src={product.image}
+                alt={product.name}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-top"
               />
             </div>
-            {displayProduct.video && (
+            {product.video && (
               <video
                 className="mt-4 w-full rounded-3xl bg-card boty-shadow"
                 controls
                 preload="metadata"
-                poster={displayProduct.image}
+                poster={product.image}
                 playsInline
               >
-                <source src={displayProduct.video} />
+                <source src={product.video} />
                 Your browser does not support product video playback.
               </video>
             )}
@@ -127,10 +124,10 @@ export function ProductDetail({ product }: { product: Product }) {
                   ZynoraCollection
                 </span>
                 <h1 className="mb-3 font-serif text-4xl text-foreground md:text-5xl">
-                  {displayProduct.name}
+                  {product.name}
                 </h1>
                 <p className="mb-4 text-lg italic text-muted-foreground">
-                  {displayProduct.tagline}
+                  {product.tagline}
                 </p>
 
                 {/* Rating */}
@@ -149,18 +146,18 @@ export function ProductDetail({ product }: { product: Product }) {
                 </div>
 
                 <p className="leading-relaxed text-foreground/80">
-                  {displayProduct.description}
+                  {product.description}
                 </p>
               </div>
 
               {/* Price */}
               <div className="mb-8 flex items-center gap-3">
                 <span className="text-3xl font-medium text-foreground">
-                  {formatPrice(displayProduct.price)}
+                  {formatPrice(product.price)}
                 </span>
-                {displayProduct.originalPrice && (
+                {product.originalPrice && (
                   <span className="text-xl text-muted-foreground line-through">
-                    {formatPrice(displayProduct.originalPrice)}
+                    {formatPrice(product.originalPrice)}
                   </span>
                 )}
               </div>

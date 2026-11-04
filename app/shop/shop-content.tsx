@@ -43,7 +43,7 @@ export function ShopContent({
 
       return matchesCategory && matchesSearch
     })
-  }, [query, selectedCategory])
+  }, [products, query, selectedCategory])
 
   return (
     <main className="min-h-screen">

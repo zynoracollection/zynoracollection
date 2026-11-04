@@ -7,16 +7,15 @@ import { CheckCircle2, ChevronLeft } from "lucide-react"
 import { Header } from "@/components/boty/header"
 import { Footer } from "@/components/boty/footer"
 import { useCart, type CartItem } from "@/components/boty/cart-context"
-import {
-  formatPrice,
-  getShipping,
-} from "@/lib/products"
+import { formatPrice, getShipping } from "@/lib/products"
+import { getWhatsAppUrl } from "@/lib/whatsapp"
 
 interface PlacedOrder {
   id: string
   items: CartItem[]
   total: number
   name: string
+  whatsappUrl: string
 }
 
 const paymentMethods = [
@@ -43,13 +42,35 @@ export function CheckoutForm() {
     event.preventDefault()
     if (items.length === 0) return
 
+    const orderId = `ZC-${Date.now().toString().slice(-6)}`
+    const origin = window.location.origin
+    const message = buildOrderMessage({
+      orderId,
+      items,
+      origin,
+      name,
+      phone,
+      address,
+      city,
+      notes,
+      payment,
+      subtotal,
+      shipping,
+      total,
+    })
+    const whatsappUrl = getWhatsAppUrl(message)
+
     setOrder({
-      id: `ZC-${Date.now().toString().slice(-6)}`,
+      id: orderId,
       items,
       total,
       name: name.trim().split(" ")[0] || "there",
+      whatsappUrl,
     })
     clearCart()
+
+    const opened = window.open(whatsappUrl, "_blank", "noopener,noreferrer")
+    if (!opened) window.location.assign(whatsappUrl)
   }
 
   return (
@@ -69,12 +90,11 @@ export function CheckoutForm() {
                 Thank you, {order.name}!
               </h1>
               <p className="mb-6 text-muted-foreground">
-                Your order{" "}
+                WhatsApp should have opened with your order{" "}
                 <span className="font-medium text-foreground">
                   {order.id}
-                </span>{" "}
-                has been placed. We will call you shortly to confirm delivery
-                details.
+                </span>
+                . Press send in WhatsApp to confirm your order with us.
               </p>
               <div className="mb-8 space-y-2 rounded-2xl bg-background p-5 text-left text-sm">
                 {order.items.map((item) => (
@@ -94,12 +114,22 @@ export function CheckoutForm() {
                   <span>{formatPrice(order.total)}</span>
                 </div>
               </div>
-              <Link
-                href="/shop"
-                className="inline-flex rounded-full bg-primary px-8 py-4 text-sm text-primary-foreground boty-transition hover:bg-primary/90"
-              >
-                Continue Shopping
-              </Link>
+              <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                <a
+                  href={order.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex rounded-full bg-primary px-8 py-4 text-sm text-primary-foreground boty-transition hover:bg-primary/90"
+                >
+                  Open WhatsApp again
+                </a>
+                <Link
+                  href="/shop"
+                  className="inline-flex rounded-full border border-border px-8 py-4 text-sm text-foreground boty-transition hover:bg-muted"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
             </div>
           ) : items.length === 0 ? (
             <div className="mx-auto max-w-xl rounded-3xl bg-card p-12 text-center boty-shadow">
@@ -131,8 +161,8 @@ export function CheckoutForm() {
                   Checkout
                 </h1>
                 <p className="text-muted-foreground">
-                  Fill in your delivery details and we will confirm your order
-                  by phone.
+                  Fill in your delivery details. We will open WhatsApp with your
+                  complete order ready to send.
                 </p>
               </div>
 
@@ -217,10 +247,11 @@ export function CheckoutForm() {
                     type="submit"
                     className="w-full rounded-full bg-primary py-4 font-medium text-primary-foreground boty-transition hover:bg-primary/90"
                   >
-                    Place Order · {formatPrice(total)}
+                    Send Order via WhatsApp · {formatPrice(total)}
                   </button>
                   <p className="text-center text-xs text-muted-foreground">
-                    This is a demo storefront. No payment is taken online.
+                    Your order summary opens in WhatsApp. No payment is taken
+                    online.
                   </p>
                 </form>
 
@@ -259,6 +290,70 @@ export function CheckoutForm() {
       <Footer />
     </main>
   )
+}
+
+function buildOrderMessage({
+  orderId,
+  items,
+  origin,
+  name,
+  phone,
+  address,
+  city,
+  notes,
+  payment,
+  subtotal,
+  shipping,
+  total,
+}: {
+  orderId: string
+  items: CartItem[]
+  origin: string
+  name: string
+  phone: string
+  address: string
+  city: string
+  notes: string
+  payment: string
+  subtotal: number
+  shipping: number
+  total: number
+}) {
+  const lines = [
+    "*New Order — ZynoraCollection*",
+    "",
+    `*Order:* #${orderId}`,
+    "",
+    "*Customer details*",
+    `Name: ${name}`,
+    `Phone: ${phone}`,
+    `Address: ${address}`,
+    `City: ${city}`,
+    `Payment: ${payment}`,
+  ]
+
+  if (notes.trim()) lines.push(`Notes: ${notes.trim()}`)
+
+  lines.push("", "*Items*")
+
+  items.forEach((item, index) => {
+    lines.push(
+      `${index + 1}. ${item.name}`,
+      `   Qty: ${item.quantity} × ${formatPrice(item.price)} = ${formatPrice(item.price * item.quantity)}`,
+      `   ${origin}/product/${item.productId}`,
+    )
+  })
+
+  lines.push(
+    "",
+    `Subtotal: ${formatPrice(subtotal)}`,
+    `Shipping: ${shipping === 0 ? "Free" : formatPrice(shipping)}`,
+    `*Total: ${formatPrice(total)}*`,
+    "",
+    "Please confirm my order. Thank you!",
+  )
+
+  return lines.join("\n")
 }
 
 function Field({

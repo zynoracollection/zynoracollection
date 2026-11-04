@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProductDetail } from "@/components/boty/product-detail"
 import { products } from "@/lib/products"
-import { getStoreProduct } from "@/lib/store-products"
+import { getStoreProduct, getStoreProducts } from "@/lib/store-products"
 
 interface ProductPageProps {
   params: Promise<{ id: string }>
@@ -41,5 +41,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound()
   }
 
-  return <ProductDetail key={product.id} product={product} />
+  const relatedProducts = (await getStoreProducts())
+    .filter((item) => item.id !== product.id)
+    .slice(0, 3)
+
+  return (
+    <ProductDetail
+      key={product.id}
+      product={product}
+      relatedProducts={relatedProducts}
+    />
+  )
 }

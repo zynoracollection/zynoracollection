@@ -1,5 +1,3 @@
-"use client"
-
 import { ShoppingBag, Tag, Sparkles } from "lucide-react"
 
 const benefits = [
