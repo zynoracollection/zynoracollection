@@ -1,6 +1,7 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display, Raleway } from 'next/font/google'
+import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from '@/components/boty/cart-context'
 import './globals.css'
@@ -128,6 +129,14 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7571358861709958"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${dmSans.variable} ${playfairDisplay.variable} ${raleway.variable} font-sans antialiased`}>
         <script
           type="application/ld+json"
